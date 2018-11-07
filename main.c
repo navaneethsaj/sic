@@ -158,6 +158,8 @@ void repopulateaddr()
                 snprintf(buffer, 255, "%d", symtab[j].address);
                 printf("\nrep%s-%s",symtab[j].label,buffer);
                 strcpy(sic[k].operand,buffer);
+                strcat(textrec[trec_count].col4,buffer);
+                ctrec_length+=2;
                 i++;
             }
         }
@@ -168,14 +170,14 @@ void repopulateaddr()
 void printheader()
 {
     printf("\nHEADER\n");
-    printf("%s-%s-%s-%i",headerrec.col1,headerrec.col2,headerrec.col3,headerrec.col4);
+    printf("%s-%s-%s-%i\n",headerrec.col1,headerrec.col2,headerrec.col3,headerrec.col4);
 }
 
 void printend()
 {
 
     printf("\nEND\n");
-    printf("%s-%s",endrec.col1,endrec.col2);
+    printf("%s-%s\n",endrec.col1,endrec.col2);
 }
 
 void printtext()
@@ -215,6 +217,7 @@ int main()
             strcpy(endrec.col2,operand);
             strcpy(textrec[trec_count].col1,"T");
             strcpy(textrec[trec_count].col2,operand);
+            strcpy(textrec[trec_count].col4,"");
 //            trec_count++;
 //            strcpy(textrec[trec_count].col3,);
 //            strcpy(textrec[trec_count].col4,"");
@@ -256,6 +259,8 @@ int main()
             char buffer[255];
             locctr+=1;
             snprintf(buffer, 10, "%d", inoptab(opcode));
+            strcat(textrec[trec_count].col4,buffer);
+            ctrec_length+=1;
             strcpy(sic[linecount].opcode,buffer);
         }
         else if (strcmp(opcode,"WORD")==0)
@@ -267,7 +272,7 @@ int main()
             }
             //printf("operand %s %s %i\n",val,operand,strlen(operand));
             strcpy(sic[linecount].opcode,val);
-            strcpy(textrec[trec_count].col4,val);
+            strcat(textrec[trec_count].col4,val);
             ctrec_length+=3;
             linecount++;
             //printf("-w%s%i\n",opcode,locctr);
@@ -276,14 +281,14 @@ int main()
         else if (strcmp(opcode,"BYTE")==0)
         {
             locctr+=1;
-            char val[255];
+            char val[255]="";
             for (int i = 0; i < strlen(operand) - 3; ++i) {
                 val[i]=operand[i+2];
             }
-            //printf("operand %s %s\n",val,operand);
+            printf("operand %s %s\n",val,operand);
             strcpy(sic[linecount].opcode,val);
-            strcpy(textrec[trec_count].col4,val);
-            ctrec_length+=3;
+            strcat(textrec[trec_count].col4,val);
+            ctrec_length+=1;
             linecount++;
             continue;
         }
@@ -295,9 +300,10 @@ int main()
             ctrec_length=0;
             trec_count++;
             strcpy(textrec[trec_count].col1,"T");
+            strcpy(textrec[trec_count].col4,"");
             char buffer[255];
             locctr+=1;
-            snprintf(buffer, 10, "%d", locctr);
+            snprintf(buffer, 255, "%d", locctr);
             strcpy(textrec[trec_count].col2,buffer);
             //printf("-rw%s%i\n",opcode,locctr);
             continue;
@@ -310,9 +316,10 @@ int main()
             ctrec_length=0;
             trec_count++;
             strcpy(textrec[trec_count].col1,"T");
+            strcpy(textrec[trec_count].col4,"");
             char buffer[255];
             locctr+=1;
-            snprintf(buffer, 10, "%d", locctr);
+            snprintf(buffer, 255, "%d", locctr);
             strcpy(textrec[trec_count].col2,buffer);
             //printf("-rb%s%i\n",opcode,locctr);
             continue;
@@ -352,6 +359,8 @@ int main()
                     char buffer[255];
                     snprintf(buffer, 10, "%d", symtab[insymtab(operand)].address);
                     strcpy(sic[linecount].operand,buffer);
+                    strcat(textrec[trec_count].col4,buffer);
+                    ctrec_length+=2;
                     //address is already present
                     //take down address
                 }
@@ -381,6 +390,9 @@ int main()
 
         linecount++;
     }
+
+    textrec[trec_count].col3=ctrec_length;
+    trec_count++;
 
     headerrec.col4=locctr-startaddr;
     repopulateaddr();
