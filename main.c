@@ -156,9 +156,36 @@ void repopulateaddr()
                 int k = symtab[j].list[i];
                 char buffer[255];
                 snprintf(buffer, 255, "%d", symtab[j].address);
-                printf("\nrep%s-%s",symtab[j].label,buffer);
+                printf("\nrep%s-%s-%i",symtab[j].label,buffer,k);
                 strcpy(sic[k].operand,buffer);
-                strcat(textrec[trec_count].col4,buffer);
+
+                int m=0;
+                int p=0;
+                while (p<strlen(textrec[trec_count].col4))
+                {
+
+                    if (textrec[trec_count].col4[p]=='^')
+                    {
+                            m++;
+                            if (m+1==k)
+                            {
+                                break;
+                            }
+                    }
+                    ++p;
+                }
+                char str1[255]="";
+                char str2[255]="";
+                strncpy(str1,textrec[trec_count].col4,p+3);
+                strcat(str1,buffer);
+                strcpy(str2,textrec[trec_count].col4+p+3);
+                strcpy(textrec[trec_count].col4, str1);
+                strcat(textrec[trec_count].col4, str2);
+                printf("s1 %s- s2 %s",str1,str2);
+//                textrec[trec_count].col4[m+3]=
+                //printf("m-%i-%i\n",m,p);
+                //strcat(textrec[trec_count].col4,buffer);
+                //strcat(textrec[trec_count].col4,"^");
                 ctrec_length+=2;
                 i++;
             }
@@ -259,6 +286,7 @@ int main()
             char buffer[255];
             locctr+=1;
             snprintf(buffer, 10, "%d", inoptab(opcode));
+            strcat(textrec[trec_count].col4,"^");
             strcat(textrec[trec_count].col4,buffer);
             ctrec_length+=1;
             strcpy(sic[linecount].opcode,buffer);
@@ -391,11 +419,11 @@ int main()
         linecount++;
     }
 
+    repopulateaddr();
     textrec[trec_count].col3=ctrec_length;
     trec_count++;
 
     headerrec.col4=locctr-startaddr;
-    repopulateaddr();
     printsymtab();
     printsic();
 
