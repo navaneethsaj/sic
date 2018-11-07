@@ -48,6 +48,7 @@ struct struct_end endrec;
 struct struct_text textrec[255];
 
 int trec_count=0;
+int ctrec_length=0;
 int symtabsize = 0;
 int locctr=0;
 int linecount=0;
@@ -105,7 +106,7 @@ void substring(char *sym)
 {
 
     char sub[255];
-    for (int i = 2; i < strlen(sym)-1; ++i) {
+    for (int i = 2; i < strlen(sym) - 1; ++i) {
 
         sub[i-2]=sym[i];
     }
@@ -181,10 +182,10 @@ void printtext()
 {
 
     printf("\nTEXT\n");
-    int i;
+    int i=0;
     while (i<trec_count)
     {
-        printf("%s-%s-%i-%s",textrec[i].col1,textrec[i].col2,textrec[i].col3,textrec[i].col4);
+        printf("%s-%s-%i-%s\n",textrec[i].col1,textrec[i].col2,textrec[i].col3,textrec[i].col4);
         ++i;
     }
 }
@@ -212,6 +213,11 @@ int main()
             strcpy(headerrec.col3,operand);
             strcpy(endrec.col1,"E");
             strcpy(endrec.col2,operand);
+            strcpy(textrec[trec_count].col1,"T");
+            strcpy(textrec[trec_count].col2,operand);
+//            trec_count++;
+//            strcpy(textrec[trec_count].col3,);
+//            strcpy(textrec[trec_count].col4,"");
             locctr=atoi(operand);
             startaddr = locctr;
             printf("%i locctr\n",locctr);
@@ -255,19 +261,44 @@ int main()
         else if (strcmp(opcode,"WORD")==0)
         {
             locctr+=3;
+            char val[255]="";
+            for (int i = 0; i < strlen(operand) - 3; ++i) {
+                val[i]=operand[i+2];
+            }
+            //printf("operand %s %s %i\n",val,operand,strlen(operand));
+            strcpy(sic[linecount].opcode,val);
+            strcpy(textrec[trec_count].col4,val);
+            ctrec_length+=3;
+            linecount++;
             //printf("-w%s%i\n",opcode,locctr);
             continue;
         }
         else if (strcmp(opcode,"BYTE")==0)
         {
             locctr+=1;
-            //printf("-b%s%i\n",opcode,locctr);
+            char val[255];
+            for (int i = 0; i < strlen(operand) - 3; ++i) {
+                val[i]=operand[i+2];
+            }
+            //printf("operand %s %s\n",val,operand);
+            strcpy(sic[linecount].opcode,val);
+            strcpy(textrec[trec_count].col4,val);
+            ctrec_length+=3;
+            linecount++;
             continue;
         }
         else if (strcmp(opcode,"RESW")==0)
         {
             substring(operand);
             locctr+=(3*atoi(operand));
+            textrec[trec_count].col3=ctrec_length;
+            ctrec_length=0;
+            trec_count++;
+            strcpy(textrec[trec_count].col1,"T");
+            char buffer[255];
+            locctr+=1;
+            snprintf(buffer, 10, "%d", locctr);
+            strcpy(textrec[trec_count].col2,buffer);
             //printf("-rw%s%i\n",opcode,locctr);
             continue;
         }
@@ -275,6 +306,14 @@ int main()
         {
             substring(operand);
             locctr+=atoi(operand);
+            textrec[trec_count].col3=ctrec_length;
+            ctrec_length=0;
+            trec_count++;
+            strcpy(textrec[trec_count].col1,"T");
+            char buffer[255];
+            locctr+=1;
+            snprintf(buffer, 10, "%d", locctr);
+            strcpy(textrec[trec_count].col2,buffer);
             //printf("-rb%s%i\n",opcode,locctr);
             continue;
         }
