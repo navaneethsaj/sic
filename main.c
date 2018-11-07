@@ -18,11 +18,40 @@ struct struct_sic
     char operand[255];
 };
 
+struct struct_header
+{
+
+    char col1[255]; //H
+    char col2[255]; //pgmname
+    char col3[255]; //start addr
+    int col4; //length
+};
+struct struct_text
+{
+
+    char col1[255];//T
+    char col2[255];//start
+    int col3;//length
+    char col4[255];//obj
+};
+struct struct_end
+{
+
+    char col1[255];//E
+    char col2[255];//start addr
+};
+
 struct struct_symtab symtab[255];
 struct struct_sic sic[255];
+struct struct_header headerrec;
+struct struct_end endrec;
+struct struct_text textrec[255];
+
+int trec_count=0;
 int symtabsize = 0;
 int locctr=0;
 int linecount=0;
+int startaddr=0;
 int insymtab(char sym[255])
 {
 
@@ -135,6 +164,31 @@ void repopulateaddr()
     }
 }
 
+void printheader()
+{
+    printf("\nHEADER\n");
+    printf("%s-%s-%s-%i",headerrec.col1,headerrec.col2,headerrec.col3,headerrec.col4);
+}
+
+void printend()
+{
+
+    printf("\nEND\n");
+    printf("%s-%s",endrec.col1,endrec.col2);
+}
+
+void printtext()
+{
+
+    printf("\nTEXT\n");
+    int i;
+    while (i<trec_count)
+    {
+        printf("%s-%s-%i-%s",textrec[i].col1,textrec[i].col2,textrec[i].col3,textrec[i].col4);
+        ++i;
+    }
+}
+
 int main()
 {
 
@@ -153,8 +207,13 @@ int main()
 
         if (strcmp(opcode,"START") == 0)
         {
-
+            strcpy(headerrec.col1,"H");
+            strcpy(headerrec.col2,label);
+            strcpy(headerrec.col3,operand);
+            strcpy(endrec.col1,"E");
+            strcpy(endrec.col2,operand);
             locctr=atoi(operand);
+            startaddr = locctr;
             printf("%i locctr\n",locctr);
             continue;
         }
@@ -187,7 +246,7 @@ int main()
         //operator
         if (inoptab(opcode) >= 0)
         {
-            printf("insym %s\n",opcode);
+            //printf("insym %s\n",opcode);
             char buffer[255];
             locctr+=1;
             snprintf(buffer, 10, "%d", inoptab(opcode));
@@ -196,27 +255,27 @@ int main()
         else if (strcmp(opcode,"WORD")==0)
         {
             locctr+=3;
-            printf("-w%s%i\n",opcode,locctr);
+            //printf("-w%s%i\n",opcode,locctr);
             continue;
         }
         else if (strcmp(opcode,"BYTE")==0)
         {
             locctr+=1;
-            printf("-b%s%i\n",opcode,locctr);
+            //printf("-b%s%i\n",opcode,locctr);
             continue;
         }
         else if (strcmp(opcode,"RESW")==0)
         {
             substring(operand);
             locctr+=(3*atoi(operand));
-            printf("-rw%s%i\n",opcode,locctr);
+            //printf("-rw%s%i\n",opcode,locctr);
             continue;
         }
         else if (strcmp(opcode,"RESB")==0)
         {
             substring(operand);
             locctr+=atoi(operand);
-            printf("-rb%s%i\n",opcode,locctr);
+            //printf("-rb%s%i\n",opcode,locctr);
             continue;
         }
         else
@@ -284,7 +343,12 @@ int main()
         linecount++;
     }
 
+    headerrec.col4=locctr-startaddr;
     repopulateaddr();
     printsymtab();
     printsic();
+
+    printheader();
+    printtext();
+    printend();
 }
